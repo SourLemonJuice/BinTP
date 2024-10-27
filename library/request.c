@@ -17,6 +17,12 @@ void AddHeader(struct Request_ request[static 1], struct FieldPair_ new_field)
     request->fields = field_list;
 }
 
+void FreeUpHeader(struct Request_ request[static 1])
+{
+    request->field_count = 0;
+    free(request->fields);
+}
+
 /*
     Return the inserted content size
  */
@@ -50,8 +56,10 @@ static size_t InsertHeaderField_(uint8_t *dest, struct FieldPair_ field)
     return offset;
 }
 
-struct MemPair_ GenerateRequest(struct Request_ prepare)
+struct MemPair_ GenerateRequest(struct Request_ *prepare_ptr)
 {
+    struct Request_ prepare = *prepare_ptr;
+
     size_t info_size = 0;
     info_size += sizeof(char[strlen(prepare.version) + 2]);
     info_size += sizeof(char[strlen(prepare.resource_id) + 2]);

@@ -3,6 +3,10 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+/*
+    Change structures name
+ */
+
 struct MemPair_ {
     size_t size;
     void *ptr;
@@ -23,9 +27,10 @@ struct Request_ {
     char *resource_id; // TODO -> uri
     int field_count;
     struct FieldPair_ *fields;
-    int load_size;
+    size_t load_size;
     void *load;
 };
 
 void AddHeader(struct Request_ request[static 1], struct FieldPair_ new_field);
-struct MemPair_ GenerateRequest(struct Request_ prepare);
+void FreeUpHeader(struct Request_ request[static 1]);
+struct MemPair_ GenerateRequest(struct Request_ *prepare_ptr);

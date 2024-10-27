@@ -34,7 +34,9 @@ int main(void)
     request.load_size = 2;
     request.load = &(uint8_t[]){0xff, 0xff};
 
-    struct MemPair_ pkg = GenerateRequest(request);
+    struct MemPair_ pkg = GenerateRequest(&request);
+    FreeUpHeader(&request);
+
     printf("Size: %zu\n", pkg.size);
     DumpHex(pkg.ptr, pkg.size);
 
