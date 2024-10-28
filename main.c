@@ -19,23 +19,23 @@ void DumpHex(void *ptr, size_t size)
 int main(void)
 {
     size_t site = 0;
-    struct Request_ request = {
+    struct BintpRequest request = {
         .version = "BinTP/0",
         .resource_id = "/",
     };
 
-    AddHeader(&request, (struct FieldPair_){
-                            .name_size = 1,
-                            .name = &(uint8_t[]){0x31},
-                            .value_size = 2,
-                            .value = &(uint8_t[]){0x31, 0x99},
-                        });
+    BintpAddHeader(&request, &(struct BintpFieldPair){
+                                 .name_size = 1,
+                                 .name = &(uint8_t[]){0x31},
+                                 .value_size = 2,
+                                 .value = &(uint8_t[]){0x31, 0x99},
+                             });
 
     request.load_size = 2;
     request.load = &(uint8_t[]){0xff, 0xff};
 
-    struct MemPair_ pkg = GenerateRequest(&request);
-    FreeUpHeader(&request);
+    struct MemPair pkg = BintpGenerateRequest(&request);
+    BintpFreeUpHeader(&request);
 
     printf("Size: %zu\n", pkg.size);
     DumpHex(pkg.ptr, pkg.size);

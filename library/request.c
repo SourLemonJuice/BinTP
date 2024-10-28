@@ -5,19 +5,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-void AddHeader(struct Request_ request[static 1], struct FieldPair_ new_field)
+void BintpAddHeader(struct BintpRequest request[static 1], struct BintpFieldPair *new_field_ptr)
 {
+    struct BintpFieldPair new_field = *new_field_ptr;
+
     request->field_count += 1;
     int count = request->field_count;
-    struct FieldPair_ *field_list = request->fields;
+    struct BintpFieldPair *field_list = request->fields;
 
-    field_list = realloc(field_list, sizeof(struct FieldPair_[count]));
+    field_list = realloc(field_list, sizeof(struct BintpFieldPair[count]));
     field_list[count - 1] = new_field;
 
     request->fields = field_list;
 }
 
-void FreeUpHeader(struct Request_ request[static 1])
+void BintpFreeUpHeader(struct BintpRequest request[static 1])
 {
     request->field_count = 0;
     free(request->fields);
@@ -37,7 +39,7 @@ static size_t InsertInfoString_(uint8_t *dest, char *str, size_t limit)
     return str_size + 2;
 }
 
-static size_t InsertHeaderField_(uint8_t *dest, struct FieldPair_ field)
+static size_t InsertHeaderField_(uint8_t *dest, struct BintpFieldPair field)
 {
     size_t offset = 0;
 
@@ -56,9 +58,9 @@ static size_t InsertHeaderField_(uint8_t *dest, struct FieldPair_ field)
     return offset;
 }
 
-struct MemPair_ GenerateRequest(struct Request_ *prepare_ptr)
+struct MemPair BintpGenerateRequest(struct BintpRequest *prepare_ptr)
 {
-    struct Request_ prepare = *prepare_ptr;
+    struct BintpRequest prepare = *prepare_ptr;
 
     size_t info_size = 0;
     info_size += sizeof(char[strlen(prepare.version) + 2]);
@@ -86,7 +88,7 @@ struct MemPair_ GenerateRequest(struct Request_ *prepare_ptr)
 
     memcpy(request + offset, prepare.load, prepare.load_size);
     if (offset + prepare.load_size != size)
-        return (struct MemPair_){.ptr = NULL};
+        return (struct MemPair){.ptr = NULL};
 
-    return (struct MemPair_){.size = size, .ptr = request};
+    return (struct MemPair){.size = size, .ptr = request};
 }

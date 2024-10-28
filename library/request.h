@@ -1,4 +1,5 @@
-#pragma once // TODO change to ifndef
+#ifndef BINTP_REQUEST_H_
+#define BINTP_REQUEST_H_
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -7,7 +8,7 @@
     Change structures name
  */
 
-struct MemPair_ {
+struct MemPair {
     size_t size;
     void *ptr;
 };
@@ -15,22 +16,24 @@ struct MemPair_ {
 /*
     Size is the number of bytes
  */
-struct FieldPair_ {
+struct BintpFieldPair {
     uint8_t name_size;
     void *name;
     uint8_t value_size;
     void *value;
 };
 
-struct Request_ {
+struct BintpRequest {
     char *version;
     char *resource_id; // TODO -> uri
     int field_count;
-    struct FieldPair_ *fields;
+    struct BintpFieldPair *fields;
     size_t load_size;
     void *load;
 };
 
-void AddHeader(struct Request_ request[static 1], struct FieldPair_ new_field);
-void FreeUpHeader(struct Request_ request[static 1]);
-struct MemPair_ GenerateRequest(struct Request_ *prepare_ptr);
+void BintpAddHeader(struct BintpRequest request[static 1], struct BintpFieldPair *new_field_ptr);
+void BintpFreeUpHeader(struct BintpRequest request[static 1]);
+struct MemPair BintpGenerateRequest(struct BintpRequest *prepare_ptr);
+
+#endif
