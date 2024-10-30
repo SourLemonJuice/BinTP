@@ -4,8 +4,7 @@
 
 #include "request.h" // TODO
 
-void DumpHex(void *ptr, size_t size)
-{
+void DumpHex(void *ptr, size_t size) {
     uint8_t *now_ptr = (uint8_t *)ptr;
     for (int i = 0; i < size; i++) {
         printf("%02x", *now_ptr);
@@ -16,8 +15,7 @@ void DumpHex(void *ptr, size_t size)
     printf("\n");
 }
 
-int main(void)
-{
+int main(void) {
     size_t site = 0;
     struct BintpRequest request = {
         .version = 0,
@@ -36,6 +34,11 @@ int main(void)
 
     struct MemPair pkg = BintpGenerateRequest(&request);
     BintpFreeUpHeader(&request);
+
+    if (MemPairIsNull(&pkg) == true) {
+        printf("pkg is NULL\n");
+        return 1;
+    }
 
     printf("Size: %zu\n", pkg.size);
     DumpHex(pkg.ptr, pkg.size);

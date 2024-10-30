@@ -1,18 +1,14 @@
 #include "request.h"
 
-#include <stdint.h>
 #include <stdio.h> // TODO just for debug
-#include <stdlib.h>
 #include <string.h>
 
 #define HEADER_END_FIELD \
-    (struct BintpFieldPair) \
-    { \
+    (struct BintpFieldPair) { \
         .name_size = 0, .value_size = 0 \
     }
 
-void BintpAddHeader(struct BintpRequest request[static 1], struct BintpFieldPair *new_field_ptr)
-{
+void BintpAddHeader(struct BintpRequest request[static 1], struct BintpFieldPair *new_field_ptr) {
     struct BintpFieldPair new_field = *new_field_ptr;
 
     request->field_count += 1;
@@ -25,8 +21,7 @@ void BintpAddHeader(struct BintpRequest request[static 1], struct BintpFieldPair
     request->fields = field_list;
 }
 
-void BintpFreeUpHeader(struct BintpRequest request[static 1])
-{
+void BintpFreeUpHeader(struct BintpRequest request[static 1]) {
     request->field_count = 0;
     free(request->fields);
 }
@@ -34,8 +29,7 @@ void BintpFreeUpHeader(struct BintpRequest request[static 1])
 /*
     Return the inserted content size
  */
-static size_t InsertInfoString_(void *dest, char *str, size_t limit)
-{
+static size_t InsertInfoString_(void *dest, char *str, size_t limit) {
     int str_len = strlen(str);
     size_t str_size = sizeof(char[str_len]);
 
@@ -49,8 +43,7 @@ static size_t InsertInfoString_(void *dest, char *str, size_t limit)
 /*
     If field.name_size == 0, then just insert one byte with zero.
  */
-static size_t InsertHeaderField_(uint8_t *dest, struct BintpFieldPair field)
-{
+static size_t InsertHeaderField_(uint8_t *dest, struct BintpFieldPair field) {
     size_t offset = 0;
 
     dest[offset] = field.name_size;
@@ -70,8 +63,7 @@ static size_t InsertHeaderField_(uint8_t *dest, struct BintpFieldPair field)
     return offset;
 }
 
-struct MemPair BintpGenerateRequest(struct BintpRequest *prepare_ptr)
-{
+struct MemPair BintpGenerateRequest(struct BintpRequest *prepare_ptr) {
     struct BintpRequest prepare = *prepare_ptr;
 
     size_t size = 0;                               // theoretical size
@@ -104,7 +96,7 @@ struct MemPair BintpGenerateRequest(struct BintpRequest *prepare_ptr)
 
     memcpy(request + offset, prepare.load, prepare.load_size);
     if (offset + prepare.load_size != size)
-        return (struct MemPair){.ptr = NULL};
+        return MEMPAIR_NULL;
 
     return (struct MemPair){.size = size, .ptr = request};
 }

@@ -4,14 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-/*
-    Change structures name
- */
-
-struct MemPair {
-    size_t size;
-    void *ptr;
-};
+#include "memory.h"
 
 /*
     Size is the number of bytes

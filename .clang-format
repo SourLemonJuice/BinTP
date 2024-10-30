@@ -4,20 +4,7 @@ IndentWidth: 4
 UseTab: Never
 LineEnding: DeriveLF
 MaxEmptyLinesToKeep: 1
-BreakBeforeBraces: Custom
-BraceWrapping:
-  AfterCaseLabel: false
-  AfterClass: true
-  AfterControlStatement: MultiLine
-  AfterEnum: false
-  AfterFunction: true
-  AfterNamespace: false
-  AfterStruct: false
-  AfterUnion: false
-  AfterExternBlock: false
-  BeforeCatch: false
-  BeforeElse: false
-  BeforeWhile: false
+BreakBeforeBraces: Attach
 AllowShortBlocksOnASingleLine: Never
 AllowShortIfStatementsOnASingleLine: Never
 IndentCaseLabels: false
