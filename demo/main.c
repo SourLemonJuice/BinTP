@@ -20,8 +20,8 @@ int main(void)
 {
     size_t site = 0;
     struct BintpRequest request = {
-        .version = "BinTP/0",
-        .resource_id = "/",
+        .version = 0,
+        .uri = "/",
     };
 
     BintpAddHeader(&request, &(struct BintpFieldPair){

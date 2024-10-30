@@ -24,8 +24,8 @@ struct BintpFieldPair {
 };
 
 struct BintpRequest {
-    char *version;
-    char *resource_id; // TODO -> uri
+    uint8_t version;
+    char *uri;
     int field_count;
     struct BintpFieldPair *fields;
     size_t load_size;

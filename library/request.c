@@ -1,9 +1,15 @@
 #include "request.h"
 
 #include <stdint.h>
-#include <stdio.h> // TODO debug
+#include <stdio.h> // TODO just for debug
 #include <stdlib.h>
 #include <string.h>
+
+#define HEADER_END_FIELD \
+    (struct BintpFieldPair) \
+    { \
+        .name_size = 0, .value_size = 0 \
+    }
 
 void BintpAddHeader(struct BintpRequest request[static 1], struct BintpFieldPair *new_field_ptr)
 {
@@ -28,7 +34,7 @@ void BintpFreeUpHeader(struct BintpRequest request[static 1])
 /*
     Return the inserted content size
  */
-static size_t InsertInfoString_(uint8_t *dest, char *str, size_t limit)
+static size_t InsertInfoString_(void *dest, char *str, size_t limit)
 {
     int str_len = strlen(str);
     size_t str_size = sizeof(char[str_len]);
@@ -39,12 +45,18 @@ static size_t InsertInfoString_(uint8_t *dest, char *str, size_t limit)
     return str_size + 2;
 }
 
+// TODO use void pointer
+/*
+    If field.name_size == 0, then just insert one byte with zero.
+ */
 static size_t InsertHeaderField_(uint8_t *dest, struct BintpFieldPair field)
 {
     size_t offset = 0;
 
     dest[offset] = field.name_size;
     offset += sizeof(uint8_t);
+    if (field.name_size == 0)
+        return offset;
 
     memcpy(dest + offset, field.name, field.name_size);
     offset += field.name_size;
@@ -62,27 +74,31 @@ struct MemPair BintpGenerateRequest(struct BintpRequest *prepare_ptr)
 {
     struct BintpRequest prepare = *prepare_ptr;
 
-    size_t info_size = 0;
-    info_size += sizeof(char[strlen(prepare.version) + 2]);
-    info_size += sizeof(char[strlen(prepare.resource_id) + 2]);
+    size_t size = 0;                               // theoretical size
+    size += sizeof(uint8_t);                       // version
+    size += sizeof(char[strlen(prepare.uri) + 2]); // URI
 
-    size_t header_size = 0;
     for (int i = 0; i < prepare.field_count; i++) {
-        header_size += sizeof(uint8_t) + prepare.fields[i].name_size;
-        header_size += sizeof(uint8_t) + prepare.fields[i].value_size;
+        size += sizeof(uint8_t) + prepare.fields[i].name_size;
+        size += sizeof(uint8_t) + prepare.fields[i].value_size;
     }
+    size += sizeof(uint8_t);
 
-    size_t size = info_size + header_size + prepare.load_size;
-    uint8_t *request = malloc(size);
+    size += prepare.load_size;
+
+    void *request = malloc(size);
 
     size_t offset = 0;
-    offset += InsertInfoString_(request + offset, prepare.version, size);
-    offset += InsertInfoString_(request + offset, prepare.resource_id, size);
+    *(uint8_t *)request = prepare.version;
+    offset += sizeof(uint8_t);
+
+    offset += InsertInfoString_(request + offset, prepare.uri, size);
 
     printf("info end in:\t%zu\n", offset); // TODO debug
 
     for (int i = 0; i < prepare.field_count; i++)
         offset += InsertHeaderField_(request + offset, prepare.fields[i]);
+    offset += InsertHeaderField_(request + offset, HEADER_END_FIELD);
 
     printf("header end in:\t%zu\n", offset); // TODO debug
 
