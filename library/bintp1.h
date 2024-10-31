@@ -1,5 +1,5 @@
-#ifndef BINTP_REQUEST_H_
-#define BINTP_REQUEST_H_
+#ifndef BINTP_BINTP1_H_
+#define BINTP_BINTP1_H_
 
 #include <stdint.h>
 #include <stdlib.h>
