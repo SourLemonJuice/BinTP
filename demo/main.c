@@ -4,7 +4,8 @@
 
 #include "request.h" // TODO
 
-void DumpHex(void *ptr, size_t size) {
+void DumpHex(void *ptr, size_t size)
+{
     uint8_t *now_ptr = (uint8_t *)ptr;
     for (int i = 0; i < size; i++) {
         printf("%02x", *now_ptr);
@@ -15,7 +16,8 @@ void DumpHex(void *ptr, size_t size) {
     printf("\n");
 }
 
-void DumpBintpField(struct BintpFieldPair *field) {
+void DumpBintpField(struct BintpFieldPair *field)
+{
     printf("name_size:\t%d\n", field->name_size);
     DumpHex(field->name, field->name_size);
 
@@ -23,20 +25,21 @@ void DumpBintpField(struct BintpFieldPair *field) {
     DumpHex(field->value, field->value_size);
 }
 
-int main(void) {
-    size_t site = 0;
+static void TestRequest_(void)
+{
     struct BintpRequest request = {
-        .version = 0,
-        .method = 876,
+        .version = 1,
+        .method = 0xee,
         .uri = "/",
     };
 
-    BintpAddHeader(&request, &(struct BintpFieldPair){
-                                 .name_size = 1,
-                                 .name = &(uint8_t[]){0x31},
-                                 .value_size = 2,
-                                 .value = &(uint8_t[]){0x31, 0x99},
-                             });
+    BintpAddHeader(&request.field_count, &request.fields,
+        &(struct BintpFieldPair){
+            .name_size = 1,
+            .name = &(uint8_t[]){0x31},
+            .value_size = 2,
+            .value = &(uint8_t[]){0x31, 0x99},
+        });
 
     request.load_size = 2;
     request.load = &(uint8_t[]){0xff, 0xff};
@@ -46,14 +49,14 @@ int main(void) {
 
     if (MemPairIsNull(&pkg) == true) {
         printf("pkg is NULL\n");
-        return 1;
+        exit(EXIT_FAILURE);
     }
 
     printf("Size: %zu\n", pkg.size);
     DumpHex(pkg.ptr, pkg.size);
 
     printf("== == ==\n");
-    printf("Version:\t%d\n", BintpParseVersion(pkg.ptr, pkg.size));
+    printf("BintpParseVersion():\t%d\n", BintpParseVersion(pkg.ptr, pkg.size));
 
     struct BintpRequest parsed_request = {0};
     printf("Header size:\t%zu\n", BintpParseRequest(pkg.ptr, pkg.size, &parsed_request));
@@ -63,6 +66,32 @@ int main(void) {
 
     for (int i = 0; i < parsed_request.field_count; i++)
         DumpBintpField(&parsed_request.fields[i]);
+}
+
+static void TestResponse(void)
+{
+    struct BintpResponse response = {
+        .version = 1,
+        .status = 0xabab,
+    };
+
+    response.load_size = 0;
+
+    struct MemPair pkg = BintpGenerateResponse(&response);
+    free(response.fields);
+
+    if (MemPairIsNull(&pkg) == true)
+        exit(EXIT_FAILURE);
+
+    printf("response size:\t%zu\n", pkg.size);
+    DumpHex(pkg.ptr, pkg.size);
+}
+
+int main(void)
+{
+    TestRequest_();
+    printf("---- ---- ----\n");
+    TestResponse();
 
     return 0;
 }

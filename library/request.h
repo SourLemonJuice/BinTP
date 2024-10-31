@@ -18,18 +18,29 @@ struct BintpFieldPair {
 
 struct BintpRequest {
     uint8_t version;
-    uint16_t method;
+    uint8_t method;
     char *uri;
+    int field_count;
+    struct BintpFieldPair *fields;
+    size_t load_size; // do we need to bring the load here?
+    void *load;
+};
+
+struct BintpResponse {
+    uint8_t version;
+    uint16_t status;
     int field_count;
     struct BintpFieldPair *fields;
     size_t load_size;
     void *load;
 };
 
-void BintpAddHeader(struct BintpRequest request[static 1], struct BintpFieldPair *new_field_ptr);
+void BintpAddHeader(int *tgt_count, struct BintpFieldPair **tgt_fields, struct BintpFieldPair new_field_ptr[static 1]);
 void BintpFreeUpHeader(struct BintpRequest request[static 1]);
 struct MemPair BintpGenerateRequest(struct BintpRequest *prepare_ptr);
+struct MemPair BintpGenerateResponse(struct BintpResponse prepare_ptr[static 1]);
 int BintpParseVersion(void *bin, size_t bin_size);
 size_t BintpParseRequest(void *bin, size_t bin_size, struct BintpRequest form[static 1]);
+size_t BintpParseResponse(void *bin, size_t bin_size, struct BintpResponse form[static 1]);
 
 #endif

@@ -4,7 +4,7 @@ IndentWidth: 4
 UseTab: Never
 LineEnding: DeriveLF
 MaxEmptyLinesToKeep: 1
-BreakBeforeBraces: Attach
+BreakBeforeBraces: Linux
 AllowShortBlocksOnASingleLine: Never
 AllowShortIfStatementsOnASingleLine: Never
 IndentCaseLabels: false
