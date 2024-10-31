@@ -28,5 +28,7 @@ struct BintpRequest {
 void BintpAddHeader(struct BintpRequest request[static 1], struct BintpFieldPair *new_field_ptr);
 void BintpFreeUpHeader(struct BintpRequest request[static 1]);
 struct MemPair BintpGenerateRequest(struct BintpRequest *prepare_ptr);
+int BintpParseVersion(void *bin, size_t bin_size);
+size_t BintpParseRequest(void *bin, size_t bin_size, struct BintpRequest form[static 1]);
 
 #endif

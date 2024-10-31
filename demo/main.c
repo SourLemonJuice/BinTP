@@ -15,6 +15,14 @@ void DumpHex(void *ptr, size_t size) {
     printf("\n");
 }
 
+void DumpBintpField(struct BintpFieldPair *field) {
+    printf("name_size:\t%d\n", field->name_size);
+    DumpHex(field->name, field->name_size);
+
+    printf("value_size:\t%d\n", field->value_size);
+    DumpHex(field->value, field->value_size);
+}
+
 int main(void) {
     size_t site = 0;
     struct BintpRequest request = {
@@ -42,6 +50,15 @@ int main(void) {
 
     printf("Size: %zu\n", pkg.size);
     DumpHex(pkg.ptr, pkg.size);
+
+    printf("== == ==\n");
+    printf("Version:\t%d\n", BintpParseVersion(pkg.ptr, pkg.size));
+
+    struct BintpRequest parsed_request; // for test, don't init it
+    printf("Header size:\t%zu\n", BintpParseRequest(pkg.ptr, pkg.size, &parsed_request));
+
+    for (int i = 0; i < parsed_request.field_count; i++)
+        DumpBintpField(&parsed_request.fields[i]);
 
     return 0;
 }

@@ -15,5 +15,6 @@ struct MemPair {
     }
 
 bool MemPairIsNull(struct MemPair *pair);
+char *strnstr(char haystack[const restrict static 1], char needle[const restrict static 1], int len);
 
 #endif

@@ -1,4 +1,11 @@
+source+=./main.c
+source+=../library/request.c
+source+=../library/memory.c
+
 default: main
 
-main: main.c
-	clang ../library/request.c ../library/memory.c main.c -o main -g -I../library/
+main: ${source}
+	clang ${source} \
+		--output main \
+		-I../library/ \
+		-g
