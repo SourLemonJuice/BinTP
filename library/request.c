@@ -1,8 +1,8 @@
 #include "request.h"
 
+#include <iso646.h>
 #include <stdio.h> // TODO just for debug
 #include <string.h>
-#include <iso646.h>
 
 #define HEADER_END_FIELD \
     (struct BintpFieldPair) { \
@@ -68,7 +68,7 @@ struct MemPair BintpGenerateRequest(struct BintpRequest *prepare_ptr) {
     struct BintpRequest prepare = *prepare_ptr;
 
     size_t size = 0;                               // theoretical size
-    size += 1;                       // version
+    size += 1 + 2;                                 // version + method
     size += sizeof(char[strlen(prepare.uri) + 2]); // URI
 
     for (int i = 0; i < prepare.field_count; i++) {
@@ -84,6 +84,9 @@ struct MemPair BintpGenerateRequest(struct BintpRequest *prepare_ptr) {
     size_t offset = 0;
     *(uint8_t *)request = prepare.version;
     offset += 1;
+
+    *(uint16_t *)(request + offset) = prepare.method;
+    offset += 2;
 
     offset += InsertInfoString_(request + offset, prepare.uri, size);
 
@@ -166,6 +169,9 @@ static size_t ParseSingleField_(void *bin, size_t bin_size, struct BintpFieldPai
 size_t BintpParseRequest(void *bin, size_t bin_size, struct BintpRequest form[static 1]) {
     form->version = 1;
     size_t offset = 1;
+
+    form->method = *(uint16_t *)(bin + offset);
+    offset += 2;
 
     size_t uri_range = FindInfoStringRange_(bin + offset, bin_size - offset);
     form->uri = ParseInfoString_(bin + offset, uri_range);

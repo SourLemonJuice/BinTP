@@ -18,6 +18,7 @@ struct BintpFieldPair {
 
 struct BintpRequest {
     uint8_t version;
+    uint16_t method;
     char *uri;
     int field_count;
     struct BintpFieldPair *fields;

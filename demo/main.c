@@ -27,6 +27,7 @@ int main(void) {
     size_t site = 0;
     struct BintpRequest request = {
         .version = 0,
+        .method = 876,
         .uri = "/",
     };
 
@@ -54,8 +55,11 @@ int main(void) {
     printf("== == ==\n");
     printf("Version:\t%d\n", BintpParseVersion(pkg.ptr, pkg.size));
 
-    struct BintpRequest parsed_request; // for test, don't init it
+    struct BintpRequest parsed_request = {0};
     printf("Header size:\t%zu\n", BintpParseRequest(pkg.ptr, pkg.size, &parsed_request));
+
+    printf("URI:\t%s\n", parsed_request.uri);
+    printf("Method:\t%u\n", parsed_request.method);
 
     for (int i = 0; i < parsed_request.field_count; i++)
         DumpBintpField(&parsed_request.fields[i]);
