@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include "bintp1.h"
 
 #include <iso646.h>
@@ -166,13 +168,13 @@ int BintpParseVersion(void *bin, size_t bin_size)
     return *(uint8_t *)bin;
 }
 
-static size_t FindInfoStringRange_(char *str_start, size_t max_size)
+static size_t FindInfoStringRange_(char *info_start, size_t max_size)
 {
-    char *end = strnstr(str_start, "\r\n", max_size); // TODO uri shouldn't have \0 but still not be appropriate
+    char *end = memmem(info_start, max_size, "\r\n", sizeof(char[2]));
     if (end == NULL)
         return 0;
 
-    return (end - str_start) + sizeof(char[2]);
+    return (end - info_start) + sizeof(char[2]);
 }
 
 /*
