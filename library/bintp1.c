@@ -12,6 +12,9 @@
         .name_size = 0, .value_size = 0 \
     }
 
+#define STR_END_MARK_PTR "\0"
+#define STR_END_SIZE 1
+
 void BintpAddHeader(int *tgt_count, struct BintpFieldPair **tgt_fields, struct BintpFieldPair new_field_ptr[static 1])
 {
     struct BintpFieldPair new_field = *new_field_ptr;
@@ -53,10 +56,13 @@ static size_t InsertInfoString_(void *dest, char *str, size_t limit)
     int str_len = strlen(str);
     size_t str_size = sizeof(char[str_len]);
 
-    memcpy(dest, str, str_size);
-    memcpy(dest + str_size, &(char[]){'\r', '\n'}, 2);
+    if (str_size + STR_END_SIZE > limit)
+        return 0; // how to return an error... this is size_t
 
-    return str_size + 2;
+    memcpy(dest, str, str_size);
+    memcpy(dest + str_size, STR_END_MARK_PTR, STR_END_SIZE);
+
+    return str_size + STR_END_SIZE;
 }
 
 // TODO use void pointer
@@ -101,12 +107,10 @@ struct MemPair BintpGenerateRequest(struct BintpRequest *prepare_ptr)
 
     size_t size = 0;                               // theoretical size
     size += 1 + 1;                                 // version + method
-    size += sizeof(char[strlen(prepare.uri) + 2]); // URI
+    size += sizeof(char[strlen(prepare.uri) + STR_END_SIZE]); // URI
 
     size += GetFieldsSize_(prepare.field_count, prepare.fields);
     size += 1;
-
-    size += prepare.load_size;
 
     void *request = malloc(size);
 
@@ -125,8 +129,7 @@ struct MemPair BintpGenerateRequest(struct BintpRequest *prepare_ptr)
 
     printf("header end in:\t%zu\n", offset); // TODO debug
 
-    memcpy(request + offset, prepare.load, prepare.load_size);
-    if (offset + prepare.load_size != size)
+    if (offset != size)
         return MEMPAIR_NULL;
 
     return (struct MemPair){.size = size, .ptr = request};
@@ -139,7 +142,6 @@ struct MemPair BintpGenerateResponse(struct BintpResponse prepare_ptr[static 1])
     size_t size = 0;
     size += 1 + 2; // version + status code
     size += GetFieldsSize_(prepare.field_count, prepare.fields);
-    size += 1 + prepare.load_size;
 
     void *response = malloc(size);
 
@@ -147,13 +149,12 @@ struct MemPair BintpGenerateResponse(struct BintpResponse prepare_ptr[static 1])
     *(uint8_t *)(response + offset) = prepare.version;
     offset += 1;
 
-    *(uint16_t *)(response + offset) = prepare.status;
-    offset += 2;
+    *(uint8_t *)(response + offset) = prepare.status;
+    offset += 1;
 
     offset += InsertFields_(response + offset, prepare.field_count, prepare.fields);
 
-    memcpy(response + offset, prepare.load, prepare.load_size);
-    if (offset + prepare.load_size != size)
+    if (offset != size)
         return MEMPAIR_NULL;
 
     return (struct MemPair){.size = size, .ptr = response};
@@ -170,11 +171,11 @@ int BintpParseVersion(void *bin, size_t bin_size)
 
 static size_t FindInfoStringRange_(char *info_start, size_t max_size)
 {
-    char *end = memmem(info_start, max_size, "\r\n", sizeof(char[2]));
+    char *end = memmem(info_start, max_size, STR_END_MARK_PTR, STR_END_SIZE);
     if (end == NULL)
         return 0;
 
-    return (end - info_start) + sizeof(char[2]);
+    return (end - info_start) + STR_END_SIZE;
 }
 
 /*
@@ -182,13 +183,13 @@ static size_t FindInfoStringRange_(char *info_start, size_t max_size)
  */
 static char *ParseInfoString_(char *str_start, size_t str_range)
 {
-    size_t cstr_size = str_range - 2 + 1;
+    size_t cstr_size = str_range - STR_END_SIZE + 1;
     char *str_buffer = malloc(sizeof(char[cstr_size]));
     if (str_buffer == NULL)
         return 0;
 
     memcpy(str_buffer, str_start, cstr_size);
-    str_buffer[cstr_size] = '\0';
+    memcpy(str_buffer + cstr_size, STR_END_MARK_PTR, STR_END_SIZE);
 
     return str_buffer;
 }
@@ -224,12 +225,15 @@ static size_t ParseSingleField_(void *bin, size_t bin_size, struct BintpFieldPai
 static size_t ParseFields_(
     void *bin, size_t bin_size, int tgt_count[static 1], struct BintpFieldPair **tgt_list)
 {
+    if (bin_size <= 0)
+        return 0; // TODO error
+
     size_t offset = 0;
     int count = 0;
     struct BintpFieldPair *list_ptr = NULL;
 
     while (true) {
-        if (bin_size >= 1 and *(uint8_t *)(bin + offset) == 0) {
+        if (*(uint8_t *)(bin + offset) == 0) {
             offset += 1;
             break;
         }
@@ -271,8 +275,8 @@ size_t BintpParseResponse(void *bin, size_t bin_size, struct BintpResponse form[
     form->version = 1;
     size_t offset = 1;
 
-    form->status = *(uint16_t *)(bin + offset);
-    offset += 2;
+    form->status = *(uint8_t *)(bin + offset);
+    offset += 1;
 
     offset += ParseFields_(bin + offset, bin_size - offset, &form->field_count, &form->fields);
 

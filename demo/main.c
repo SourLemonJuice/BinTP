@@ -41,9 +41,6 @@ static void TestRequest_(void)
             .value = &(uint8_t[]){0x31, 0x99},
         });
 
-    request.load_size = 2;
-    request.load = &(uint8_t[]){0xff, 0xff};
-
     struct MemPair pkg = BintpGenerateRequest(&request);
     BintpFreeUpHeader(&request);
 
@@ -74,8 +71,6 @@ static void TestResponse(void)
         .version = 1,
         .status = 0xabab,
     };
-
-    response.load_size = 0;
 
     struct MemPair pkg = BintpGenerateResponse(&response);
     free(response.fields);

@@ -10,9 +10,9 @@
     Size is the number of bytes
  */
 struct BintpFieldPair {
-    uint8_t name_size;
+    uint16_t name_size; // max is ~(-32768) == 32768, don't use int16
     void *name;
-    uint8_t value_size;
+    uint16_t value_size;
     void *value;
 };
 
@@ -22,8 +22,6 @@ struct BintpRequest {
     char *uri;
     int field_count;
     struct BintpFieldPair *fields;
-    size_t load_size; // do we need to bring the load here?
-    void *load;
 };
 
 struct BintpResponse {
@@ -31,8 +29,6 @@ struct BintpResponse {
     uint16_t status;
     int field_count;
     struct BintpFieldPair *fields;
-    size_t load_size;
-    void *load;
 };
 
 void BintpAddHeader(int *tgt_count, struct BintpFieldPair **tgt_fields, struct BintpFieldPair new_field_ptr[static 1]);
