@@ -18,17 +18,17 @@ void DumpHex(void *ptr, size_t size)
 
 void DumpBintpField(struct BintpFieldPair *field)
 {
-    printf("name_size:\t%d\n", field->name_size);
+    printf("name_size:\t%zu\n", field->name_size);
     DumpHex(field->name, field->name_size);
 
-    printf("value_size:\t%d\n", field->value_size);
+    printf("value_size:\t%zu\n", field->value_size);
     DumpHex(field->value, field->value_size);
 }
 
 static void TestRequest_(void)
 {
     struct BintpRequest request = {
-        .version = 1,
+        .version = 0xff,
         .method = 0xee,
         .uri = "/",
     };
@@ -37,7 +37,7 @@ static void TestRequest_(void)
         &(struct BintpFieldPair){
             .name_size = 1,
             .name = &(uint8_t[]){0x31},
-            .value_size = 2,
+            .value_size = 160,
             .value = &(uint8_t[]){0x31, 0x99},
         });
 
@@ -86,7 +86,7 @@ int main(void)
 {
     TestRequest_();
     printf("---- ---- ----\n");
-    TestResponse();
+    // TestResponse();
 
     return 0;
 }

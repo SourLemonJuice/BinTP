@@ -10,9 +10,9 @@
     Size is the number of bytes
  */
 struct BintpFieldPair {
-    uint16_t name_size; // max is ~(-32768) == 32768, don't use int16
+    size_t name_size;
     void *name;
-    uint16_t value_size;
+    size_t value_size;
     void *value;
 };
 
