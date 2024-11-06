@@ -37,8 +37,8 @@ static void TestRequest_(void)
         &(struct BintpFieldPair){
             .name_size = 1,
             .name = &(uint8_t[]){0x31},
-            .value_size = 160,
-            .value = &(uint8_t[]){0x31, 0x99},
+            .value_size = 32767,
+            .value = &(uint8_t[32767]){0x31, 0},
         });
 
     struct MemPair pkg = BintpGenerateRequest(&request);
