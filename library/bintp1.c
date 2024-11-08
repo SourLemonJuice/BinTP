@@ -3,7 +3,6 @@
 #include "bintp1.h"
 
 #include <iso646.h>
-#include <stdio.h> // TODO just for debug
 #include <string.h>
 
 #define HEADER_END_FIELD \
@@ -177,6 +176,8 @@ struct MemPair BintpGenerateRequest(struct BintpRequest *prepare_ptr)
 
     size_t ret;
 
+    // get size
+
     size_t size = 0;                                          // theoretical size
     size += 1 + 1;                                            // version + method
     size += sizeof(char[strlen(prepare.uri) + STR_END_SIZE]); // URI
@@ -188,7 +189,7 @@ struct MemPair BintpGenerateRequest(struct BintpRequest *prepare_ptr)
 
     void *request = malloc(size);
 
-    printf("size:\t%zu\n", size);
+    // insert
 
     size_t offset = 0;
     *(uint8_t *)request = prepare.version;
@@ -202,17 +203,11 @@ struct MemPair BintpGenerateRequest(struct BintpRequest *prepare_ptr)
         return MEMPAIR_NULL;
     offset += ret;
 
-    printf("info end in:\t%zu\n", offset); // TODO debug
-
     ret = InsertFields_(request + offset, size - offset, prepare.field_count, prepare.fields);
     if (ret == 0)
         return MEMPAIR_NULL;
     offset += ret;
 
-
-    // TODO debug
-    printf("size:\t%zu\n", size);
-    printf("offset:\t%zu\n", offset);
     if (offset != size)
         return MEMPAIR_NULL;
 
@@ -228,11 +223,15 @@ struct MemPair BintpGenerateResponse(struct BintpResponse prepare_ptr[static 1])
 
     int ret;
 
+    // get size
+
     size_t size = 0;
     size += 1 + 2; // version + status code
     size += GetFieldsSize_(prepare.field_count, prepare.fields);
 
     void *response = malloc(size);
+
+    // insert
 
     size_t offset = 0;
     *(uint8_t *)(response + offset) = prepare.version;

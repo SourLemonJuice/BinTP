@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h> // emm... Never mind, I'm only testing on Linux anyway...
 
 #include "bintp1.h"
 
@@ -65,6 +66,42 @@ static void TestRequest_(void)
         DumpBintpField(&parsed_request.fields[i]);
 }
 
+static void TestRequestPerformance_(int cycle, bool print_toggle, bool pause_toggle)
+{
+    struct BintpFieldPair field_sample = {
+        .name = &(uint8_t[7]){0},
+        .name_size = 7,
+        .value = &(uint8_t[20]){0},
+        .value_size = 20,
+    };
+
+    for (int i = 0; i < cycle; i++) {
+        struct BintpRequest request = {
+            .version = 0xff,
+            .method = 0xee,
+            .uri = "/",
+        };
+
+        BintpAddHeader(&request.field_count, &request.fields, &field_sample);
+        BintpAddHeader(&request.field_count, &request.fields, &field_sample);
+
+        struct MemPair bin = BintpGenerateRequest(&request);
+
+        if (print_toggle == true) {
+            printf("[%d]:\tsize->%zu\n", i, bin.size);
+            printf("==== ==== ====\n");
+        }
+
+        BintpFreeUpHeader(&request);
+        free(bin.ptr);
+    }
+
+    if (pause_toggle == true)
+        pause(); // testing memory leak
+
+    printf("Request performance test run successfully with: samples=%d, print=%d\n", cycle, print_toggle);
+}
+
 static void TestResponse(void)
 {
     struct BintpResponse response = {
@@ -84,9 +121,11 @@ static void TestResponse(void)
 
 int main(void)
 {
-    TestRequest_();
-    printf("---- ---- ----\n");
+    // TestRequest_();
+    // printf("---- ---- ----\n");
     // TestResponse();
+
+    TestRequestPerformance_(1000 * 1000 * 10, false, false);
 
     return 0;
 }

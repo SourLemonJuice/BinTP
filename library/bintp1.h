@@ -17,7 +17,7 @@ struct BintpFieldPair {
 };
 
 struct BintpRequest {
-    uint8_t version;
+    uint8_t version; // TODO to be delete
     uint8_t method;
     char *uri;
     int field_count;
