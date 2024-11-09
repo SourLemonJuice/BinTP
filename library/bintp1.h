@@ -4,8 +4,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "memory.h"
-
 /*
     Size is the number of bytes
  */
@@ -31,10 +29,16 @@ struct BintpResponse {
     struct BintpFieldPair *fields;
 };
 
-void BintpAddHeader(int *tgt_count, struct BintpFieldPair **tgt_fields, struct BintpFieldPair new_field_ptr[static 1]);
-void BintpFreeUpHeader(struct BintpRequest request[static 1]);
-struct MemPair BintpGenerateRequest(struct BintpRequest *prepare_ptr);
-struct MemPair BintpGenerateResponse(struct BintpResponse prepare_ptr[static 1]);
+void Bintp1AppendField(int *tgt_count, struct BintpFieldPair *tgt_fields[static * tgt_count],
+    struct BintpFieldPair new_field_ptr[static 1]);
+
+size_t Bintp1CalcRequestSize(struct BintpRequest prepare_ptr[static 1]);
+size_t Bintp1WriteRequest(void *dest, size_t limit, struct BintpRequest prepare_ptr[static 1]);
+void Bintp1FreeUpRequest(struct BintpRequest form[static 1]);
+size_t Bintp1CalcResponseSize(struct BintpResponse prepare_ptr[static 1]);
+size_t Bintp1WriteResponse(void *dest, size_t limit, struct BintpResponse prepare_ptr[static 1]);
+void Bintp1FreeUpResponse(struct BintpResponse form[static 1]);
+
 int BintpParseVersion(void *bin, size_t bin_size);
 size_t BintpParseRequest(void *bin, size_t bin_size, struct BintpRequest form[static 1]);
 size_t BintpParseResponse(void *bin, size_t bin_size, struct BintpResponse form[static 1]);

@@ -3,8 +3,10 @@
 #include "bintp1.h"
 
 #include <iso646.h>
+#include <stdbool.h>
 #include <string.h>
 
+// TODO separate this function
 #define HEADER_END_FIELD \
     (struct BintpFieldPair) \
     { \
@@ -14,7 +16,8 @@
 #define STR_END_MARK_PTR "\0"
 #define STR_END_SIZE 1
 
-void BintpAddHeader(int *tgt_count, struct BintpFieldPair **tgt_fields, struct BintpFieldPair new_field_ptr[static 1])
+void Bintp1AppendField(int *tgt_count, struct BintpFieldPair *tgt_fields[static * tgt_count],
+    struct BintpFieldPair new_field_ptr[static 1])
 {
     struct BintpFieldPair new_field = *new_field_ptr;
 
@@ -26,13 +29,6 @@ void BintpAddHeader(int *tgt_count, struct BintpFieldPair **tgt_fields, struct B
     field_list[count - 1] = new_field;
 
     *tgt_fields = field_list;
-}
-
-// TODO TBD
-void BintpFreeUpHeader(struct BintpRequest request[static 1])
-{
-    request->field_count = 0;
-    free(request->fields);
 }
 
 /*
@@ -168,15 +164,12 @@ static size_t InsertFields_(void *dest, size_t limit, int count, struct BintpFie
 }
 
 /*
-    return MEMPAIR_NULL: error
+    return 0: error
  */
-struct MemPair BintpGenerateRequest(struct BintpRequest *prepare_ptr)
+size_t Bintp1CalcRequestSize(struct BintpRequest prepare_ptr[static 1])
 {
     struct BintpRequest prepare = *prepare_ptr;
-
     size_t ret;
-
-    // get size
 
     size_t size = 0;                                          // theoretical size
     size += 1 + 1;                                            // version + method
@@ -184,71 +177,95 @@ struct MemPair BintpGenerateRequest(struct BintpRequest *prepare_ptr)
 
     ret = GetFieldsSize_(prepare.field_count, prepare.fields);
     if (ret == 0)
-        return MEMPAIR_NULL;
+        return 0;
     size += ret + 1;
 
-    void *request = malloc(size);
-
-    // insert
-
-    size_t offset = 0;
-    *(uint8_t *)request = prepare.version;
-    offset += 1;
-
-    *(uint8_t *)(request + offset) = prepare.method;
-    offset += 1;
-
-    ret = InsertInfoString_(request + offset, size, prepare.uri);
-    if (ret == 0)
-        return MEMPAIR_NULL;
-    offset += ret;
-
-    ret = InsertFields_(request + offset, size - offset, prepare.field_count, prepare.fields);
-    if (ret == 0)
-        return MEMPAIR_NULL;
-    offset += ret;
-
-    if (offset != size)
-        return MEMPAIR_NULL;
-
-    return (struct MemPair){.size = size, .ptr = request};
+    return size;
 }
 
 /*
-    return MEMPAIR_NULL: error
+    Return the size written
+
+    return 0: error
  */
-struct MemPair BintpGenerateResponse(struct BintpResponse prepare_ptr[static 1])
+size_t Bintp1WriteRequest(void *dest, size_t limit, struct BintpRequest prepare_ptr[static 1])
+{
+    struct BintpRequest prepare = *prepare_ptr;
+    size_t ret;
+
+    size_t offset = 0;
+    *(uint8_t *)dest = prepare.version;
+    offset += 1;
+
+    *(uint8_t *)(dest + offset) = prepare.method;
+    offset += 1;
+
+    ret = InsertInfoString_(dest + offset, limit, prepare.uri);
+    if (ret == 0)
+        return 0;
+    offset += ret;
+
+    ret = InsertFields_(dest + offset, limit - offset, prepare.field_count, prepare.fields);
+    if (ret == 0)
+        return 0;
+    offset += ret;
+
+    return offset;
+}
+
+void Bintp1FreeUpRequest(struct BintpRequest form[static 1])
+{
+    form->field_count = 0;
+    free(form->fields);
+}
+
+/*
+    return 0: error
+ */
+size_t Bintp1CalcResponseSize(struct BintpResponse prepare_ptr[static 1])
 {
     struct BintpResponse prepare = *prepare_ptr;
-
-    int ret;
-
-    // get size
+    size_t ret;
 
     size_t size = 0;
     size += 1 + 2; // version + status code
-    size += GetFieldsSize_(prepare.field_count, prepare.fields);
+    ret = GetFieldsSize_(prepare.field_count, prepare.fields);
+    if (ret == 0)
+        return 0;
+    size += ret;
 
-    void *response = malloc(size);
+    return size;
+}
 
-    // insert
+/*
+    Return the size written
+
+    return 0: error
+ */
+size_t Bintp1WriteResponse(void *dest, size_t limit, struct BintpResponse prepare_ptr[static 1])
+{
+    struct BintpResponse prepare = *prepare_ptr;
+    size_t ret;
 
     size_t offset = 0;
-    *(uint8_t *)(response + offset) = prepare.version;
+    *(uint8_t *)(dest + offset) = prepare.version;
     offset += 1;
 
-    *(uint8_t *)(response + offset) = prepare.status;
+    *(uint8_t *)(dest + offset) = prepare.status;
     offset += 1;
 
-    ret = InsertFields_(response + offset, size - offset, prepare.field_count, prepare.fields);
+    ret = InsertFields_(dest + offset, limit - offset, prepare.field_count, prepare.fields);
     if (ret == 0)
-        return MEMPAIR_NULL;
+        return 0;
     offset += ret;
 
-    if (offset != size)
-        return MEMPAIR_NULL;
+    return offset;
+}
 
-    return (struct MemPair){.size = size, .ptr = response};
+void Bintp1FreeUpResponse(struct BintpResponse form[static 1])
+{
+    form->field_count = 0;
+    free(form->fields);
 }
 
 /*
