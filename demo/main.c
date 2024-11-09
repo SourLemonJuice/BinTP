@@ -18,7 +18,7 @@ static void DumpHex_(void *ptr, size_t size)
     printf("\n");
 }
 
-static void DumpBintpField_(struct BintpFieldPair *field)
+static void DumpBintpField_(struct Bintp1FieldPair *field)
 {
     printf("name_size:\t%zu\n", field->name_size);
     DumpHex_(field->name, field->name_size);
@@ -29,14 +29,13 @@ static void DumpBintpField_(struct BintpFieldPair *field)
 
 static void TestRequest_(void)
 {
-    struct BintpRequest request = {
-        .version = 0xff,
+    struct Bintp1Request request = {
         .method = 0xee,
         .uri = "/",
     };
 
     Bintp1AppendField(&request.field_count, &request.fields,
-        &(struct BintpFieldPair){
+        &(struct Bintp1FieldPair){
             .name_size = 1,
             .name = &(uint8_t[]){0x31},
             .value_size = 10,
@@ -58,8 +57,8 @@ static void TestRequest_(void)
     printf("== == ==\n");
     printf("BintpParseVersion():\t%d\n", BintpParseVersion(bin_ptr, bin_size));
 
-    struct BintpRequest parsed_request = {0};
-    printf("Header size:\t%zu\n", BintpParseRequest(bin_ptr, bin_size, &parsed_request));
+    struct Bintp1Request parsed_request = {0};
+    printf("Header size:\t%zu\n", Bintp1ParseRequest(bin_ptr, bin_size, &parsed_request));
 
     printf("URI:\t%s\n", parsed_request.uri);
     printf("Method:\t%u\n", parsed_request.method);
@@ -70,7 +69,7 @@ static void TestRequest_(void)
 
 static void TestRequestPerformance_(int cycle, bool print_toggle, bool pause_toggle)
 {
-    struct BintpFieldPair field_sample = {
+    struct Bintp1FieldPair field_sample = {
         .name = &(uint8_t[7]){0},
         .name_size = 7,
         .value = &(uint8_t[20]){0},
@@ -78,8 +77,7 @@ static void TestRequestPerformance_(int cycle, bool print_toggle, bool pause_tog
     };
 
     for (int i = 0; i < cycle; i++) {
-        struct BintpRequest request = {
-            .version = 0xff,
+        struct Bintp1Request request = {
             .method = 0xee,
             .uri = "/",
         };
@@ -110,8 +108,7 @@ static void TestRequestPerformance_(int cycle, bool print_toggle, bool pause_tog
 
 static void TestResponse(void)
 {
-    struct BintpResponse response = {
-        .version = 1,
+    struct Bintp1Response response = {
         .status = 0xab,
     };
 

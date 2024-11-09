@@ -6,9 +6,11 @@
 #include <stdbool.h>
 #include <string.h>
 
+#define BINTP_REVERSION 0xff
+
 // TODO separate this function
 #define HEADER_END_FIELD \
-    (struct BintpFieldPair) \
+    (struct Bintp1FieldPair) \
     { \
         .name_size = 0, .value_size = 0 \
     }
@@ -16,16 +18,16 @@
 #define STR_END_MARK_PTR "\0"
 #define STR_END_SIZE 1
 
-void Bintp1AppendField(int *tgt_count, struct BintpFieldPair *tgt_fields[static * tgt_count],
-    struct BintpFieldPair new_field_ptr[static 1])
+void Bintp1AppendField(int *tgt_count, struct Bintp1FieldPair *tgt_fields[static * tgt_count],
+    struct Bintp1FieldPair new_field_ptr[static 1])
 {
-    struct BintpFieldPair new_field = *new_field_ptr;
+    struct Bintp1FieldPair new_field = *new_field_ptr;
 
     *tgt_count += 1;
     int count = *tgt_count;
-    struct BintpFieldPair *field_list = *tgt_fields;
+    struct Bintp1FieldPair *field_list = *tgt_fields;
 
-    field_list = realloc(field_list, sizeof(struct BintpFieldPair[count]));
+    field_list = realloc(field_list, sizeof(struct Bintp1FieldPair[count]));
     field_list[count - 1] = new_field;
 
     *tgt_fields = field_list;
@@ -49,7 +51,7 @@ static bool GetFieldPartUseLargeMode_(size_t size)
 
     return 0: error
  */
-static size_t GetFieldsSize_(uint count, struct BintpFieldPair fields[static count])
+static size_t GetFieldsSize_(uint count, struct Bintp1FieldPair fields[static count])
 {
     size_t size = 0;
 
@@ -125,7 +127,7 @@ static size_t InsertSingleFieldPart_(void *dest, size_t dest_limit, void *src_pt
 
     return 0: error
  */
-static size_t InsertSingleField_(void *dest, size_t limit, struct BintpFieldPair field)
+static size_t InsertSingleField_(void *dest, size_t limit, struct Bintp1FieldPair field)
 {
     if (field.name_size == 0)
         return 1;
@@ -149,7 +151,7 @@ static size_t InsertSingleField_(void *dest, size_t limit, struct BintpFieldPair
 /*
     return 0: error
  */
-static size_t InsertFields_(void *dest, size_t limit, int count, struct BintpFieldPair fields[static count])
+static size_t InsertFields_(void *dest, size_t limit, int count, struct Bintp1FieldPair fields[static count])
 {
     size_t offset = 0;
     int ret;
@@ -169,9 +171,9 @@ static size_t InsertFields_(void *dest, size_t limit, int count, struct BintpFie
 /*
     return 0: error
  */
-size_t Bintp1CalcRequestSize(struct BintpRequest prepare_ptr[static 1])
+size_t Bintp1CalcRequestSize(struct Bintp1Request prepare_ptr[static 1])
 {
-    struct BintpRequest prepare = *prepare_ptr;
+    struct Bintp1Request prepare = *prepare_ptr;
     size_t ret;
 
     size_t size = 0;                                          // theoretical size
@@ -191,13 +193,15 @@ size_t Bintp1CalcRequestSize(struct BintpRequest prepare_ptr[static 1])
 
     return 0: error
  */
-size_t Bintp1WriteRequest(void *dest, size_t limit, struct BintpRequest prepare_ptr[static 1])
+size_t Bintp1WriteRequest(void *dest, size_t limit, struct Bintp1Request prepare_ptr[static 1])
 {
-    struct BintpRequest prepare = *prepare_ptr;
+    struct Bintp1Request prepare = *prepare_ptr;
     size_t ret;
 
     size_t offset = 0;
-    *(uint8_t *)dest = prepare.version;
+
+    // version
+    *(uint8_t *)dest = BINTP_REVERSION;
     offset += 1;
 
     *(uint8_t *)(dest + offset) = prepare.method;
@@ -216,7 +220,7 @@ size_t Bintp1WriteRequest(void *dest, size_t limit, struct BintpRequest prepare_
     return offset;
 }
 
-void Bintp1FreeUpRequest(struct BintpRequest form[static 1])
+void Bintp1FreeUpRequest(struct Bintp1Request form[static 1])
 {
     form->field_count = 0;
     free(form->fields);
@@ -225,9 +229,9 @@ void Bintp1FreeUpRequest(struct BintpRequest form[static 1])
 /*
     return 0: error
  */
-size_t Bintp1CalcResponseSize(struct BintpResponse prepare_ptr[static 1])
+size_t Bintp1CalcResponseSize(struct Bintp1Response prepare_ptr[static 1])
 {
-    struct BintpResponse prepare = *prepare_ptr;
+    struct Bintp1Response prepare = *prepare_ptr;
     size_t ret;
 
     size_t size = 0;
@@ -245,13 +249,13 @@ size_t Bintp1CalcResponseSize(struct BintpResponse prepare_ptr[static 1])
 
     return 0: error
  */
-size_t Bintp1WriteResponse(void *dest, size_t limit, struct BintpResponse prepare_ptr[static 1])
+size_t Bintp1WriteResponse(void *dest, size_t limit, struct Bintp1Response prepare_ptr[static 1])
 {
-    struct BintpResponse prepare = *prepare_ptr;
+    struct Bintp1Response prepare = *prepare_ptr;
     size_t ret;
 
     size_t offset = 0;
-    *(uint8_t *)(dest + offset) = prepare.version;
+    *(uint8_t *)(dest + offset) = BINTP_REVERSION;
     offset += 1;
 
     *(uint8_t *)(dest + offset) = prepare.status;
@@ -265,15 +269,11 @@ size_t Bintp1WriteResponse(void *dest, size_t limit, struct BintpResponse prepar
     return offset;
 }
 
-void Bintp1FreeUpResponse(struct BintpResponse form[static 1])
+void Bintp1FreeUpResponse(struct Bintp1Response form[static 1])
 {
     form->field_count = 0;
     free(form->fields);
 }
-
-/*
-    Parser
- */
 
 /*
     return -1: bin_size invalid
@@ -346,7 +346,7 @@ static size_t ParseSingleFieldPartSize_(void *bin, size_t limit, size_t length[s
 /*
     if bin_size is 0, need throw an error(return 0)
  */
-static size_t ParseSingleField_(void *bin, size_t limit, struct BintpFieldPair pair[static 1])
+static size_t ParseSingleField_(void *bin, size_t limit, struct Bintp1FieldPair pair[static 1])
 {
     if (limit <= 0)
         return 0;
@@ -383,7 +383,7 @@ static size_t ParseSingleField_(void *bin, size_t limit, struct BintpFieldPair p
 /*
     return 0: error occurs
  */
-static size_t ParseFields_(void *bin, size_t bin_size, int tgt_count[static 1], struct BintpFieldPair **tgt_list)
+static size_t ParseFields_(void *bin, size_t bin_size, int tgt_count[static 1], struct Bintp1FieldPair **tgt_list)
 {
     if (bin_size <= 0)
         return 0;
@@ -392,7 +392,7 @@ static size_t ParseFields_(void *bin, size_t bin_size, int tgt_count[static 1], 
 
     size_t offset = 0;
     int count = 0;
-    struct BintpFieldPair *list_ptr = NULL;
+    struct Bintp1FieldPair *list_ptr = NULL;
 
     while (true) {
         if (*(uint8_t *)(bin + offset) == 0) {
@@ -400,7 +400,7 @@ static size_t ParseFields_(void *bin, size_t bin_size, int tgt_count[static 1], 
             break;
         }
         count += 1;
-        list_ptr = realloc(list_ptr, sizeof(struct BintpFieldPair[count]));
+        list_ptr = realloc(list_ptr, sizeof(struct Bintp1FieldPair[count]));
 
         ret = ParseSingleField_(bin + offset, bin_size - offset, list_ptr + count - 1);
         if (ret == 0)
@@ -420,12 +420,10 @@ static size_t ParseFields_(void *bin, size_t bin_size, int tgt_count[static 1], 
 
     Return 0: error
  */
-size_t BintpParseRequest(void *bin, size_t bin_size, struct BintpRequest form[static 1])
+size_t Bintp1ParseRequest(void *bin, size_t bin_size, struct Bintp1Request form[static 1])
 {
-    int ret;
-
-    form->version = 0xff;
-    size_t offset = 1;
+    size_t ret;
+    size_t offset = 1; // skip version
 
     form->method = *(uint8_t *)(bin + offset);
     offset += 1;
@@ -452,12 +450,10 @@ size_t BintpParseRequest(void *bin, size_t bin_size, struct BintpRequest form[st
 
     return 0: error
  */
-size_t BintpParseResponse(void *bin, size_t bin_size, struct BintpResponse form[static 1])
+size_t Bintp1ParseResponse(void *bin, size_t bin_size, struct Bintp1Response form[static 1])
 {
-    int ret;
-
-    form->version = 1;
-    size_t offset = 1;
+    size_t ret;
+    size_t offset = 1; // skip version
 
     form->status = *(uint8_t *)(bin + offset);
     offset += 1;
