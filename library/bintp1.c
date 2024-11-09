@@ -45,9 +45,11 @@ static bool GetFieldPartUseLargeMode_(size_t size)
 }
 
 /*
+    Include ending symbol, therefore the return value will >= 1
+
     return 0: error
  */
-static size_t GetFieldsSize_(int count, struct BintpFieldPair fields[static count])
+static size_t GetFieldsSize_(uint count, struct BintpFieldPair fields[static count])
 {
     size_t size = 0;
 
@@ -65,6 +67,7 @@ static size_t GetFieldsSize_(int count, struct BintpFieldPair fields[static coun
         size += GetFieldPartUseLargeMode_(temp_size) == false ? 1 : 2;
         size += temp_size;
     }
+    size += 1;
 
     return size;
 }
@@ -178,7 +181,7 @@ size_t Bintp1CalcRequestSize(struct BintpRequest prepare_ptr[static 1])
     ret = GetFieldsSize_(prepare.field_count, prepare.fields);
     if (ret == 0)
         return 0;
-    size += ret + 1;
+    size += ret;
 
     return size;
 }
@@ -228,7 +231,7 @@ size_t Bintp1CalcResponseSize(struct BintpResponse prepare_ptr[static 1])
     size_t ret;
 
     size_t size = 0;
-    size += 1 + 2; // version + status code
+    size += 1 + 1; // version + status code
     ret = GetFieldsSize_(prepare.field_count, prepare.fields);
     if (ret == 0)
         return 0;

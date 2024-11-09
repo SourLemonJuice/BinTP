@@ -39,8 +39,8 @@ static void TestRequest_(void)
         &(struct BintpFieldPair){
             .name_size = 1,
             .name = &(uint8_t[]){0x31},
-            .value_size = 32767,
-            .value = &(uint8_t[32767]){0x31, 0},
+            .value_size = 10,
+            .value = &(uint8_t[10]){0x31, 0},
         });
 
     size_t bin_size = Bintp1CalcRequestSize(&request);
@@ -108,29 +108,29 @@ static void TestRequestPerformance_(int cycle, bool print_toggle, bool pause_tog
     printf("Request performance test run successfully with: samples=%d, print=%d\n", cycle, print_toggle);
 }
 
-// TODO
-/* static void TestResponse(void)
+static void TestResponse(void)
 {
     struct BintpResponse response = {
         .version = 1,
-        .status = 0xabab,
+        .status = 0xab,
     };
 
-    struct MemPair pkg = BintpGenerateResponse(&response);
-    free(response.fields);
-
-    if (MemPairIsNull(&pkg) == true)
+    size_t bin_size = Bintp1CalcResponseSize(&response);
+    if (bin_size == 0)
         exit(EXIT_FAILURE);
+    void *bin_ptr = malloc(bin_size);
+    Bintp1WriteResponse(bin_ptr, bin_size, &response);
+    Bintp1FreeUpResponse(&response);
 
-    printf("response size:\t%zu\n", pkg.size);
-    DumpHex_(pkg.ptr, pkg.size);
-} */
+    printf("response size:\t%zu\n", bin_size);
+    DumpHex_(bin_ptr, bin_size);
+}
 
 int main(void)
 {
-    // TestRequest_();
-    // printf("---- ---- ----\n");
-    // TestResponse();
+    TestRequest_();
+    printf("---- ---- ----\n");
+    TestResponse();
 
     TestRequestPerformance_(1000 * 1000, false, false);
 
