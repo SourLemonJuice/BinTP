@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define BINTP_REVERSION 0xff
+static const uint8_t kReversion = 0xff;
 
 // TODO separate this function
 #define HEADER_END_FIELD \
@@ -17,6 +17,15 @@
 
 #define STR_END_MARK_PTR "\0"
 #define STR_END_SIZE 1
+
+const uint8_t kBintp1MethodGet = 0xa9;
+const uint8_t kBintp1MethodHead = 0xd3;
+const uint8_t kBintp1MethodPost = 0x11;
+const uint8_t kBintp1MethodPut = 0xa0;
+const uint8_t kBintp1MethodDelete = 0x80;
+const uint8_t kBintp1MethodConnect = 0x6f;
+const uint8_t kBintp1MethodOptions = 0x83;
+const uint8_t kBintp1MethodTrace = 0x0d;
 
 void Bintp1AppendField(int *tgt_count, struct Bintp1FieldPair *tgt_fields[static * tgt_count],
     struct Bintp1FieldPair new_field_ptr[static 1])
@@ -201,7 +210,7 @@ size_t Bintp1WriteRequest(void *dest, size_t limit, struct Bintp1Request prepare
     size_t offset = 0;
 
     // version
-    *(uint8_t *)dest = BINTP_REVERSION;
+    *(uint8_t *)dest = kReversion;
     offset += 1;
 
     *(uint8_t *)(dest + offset) = prepare.method;
@@ -235,7 +244,7 @@ size_t Bintp1CalcResponseSize(struct Bintp1Response prepare_ptr[static 1])
     size_t ret;
 
     size_t size = 0;
-    size += 1 + 1; // version + status code
+    size += 1 + 2; // version + status code
     ret = GetFieldsSize_(prepare.field_count, prepare.fields);
     if (ret == 0)
         return 0;
@@ -255,11 +264,11 @@ size_t Bintp1WriteResponse(void *dest, size_t limit, struct Bintp1Response prepa
     size_t ret;
 
     size_t offset = 0;
-    *(uint8_t *)(dest + offset) = BINTP_REVERSION;
+    *(uint8_t *)(dest + offset) = kReversion;
     offset += 1;
 
-    *(uint8_t *)(dest + offset) = prepare.status;
-    offset += 1;
+    *(uint16_t *)(dest + offset) = prepare.status;
+    offset += 2;
 
     ret = InsertFields_(dest + offset, limit - offset, prepare.field_count, prepare.fields);
     if (ret == 0)

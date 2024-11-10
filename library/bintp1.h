@@ -27,6 +27,15 @@ struct Bintp1Response {
     struct Bintp1FieldPair *fields;
 };
 
+extern const uint8_t kBintp1MethodGet;
+extern const uint8_t kBintp1MethodHead;
+extern const uint8_t kBintp1MethodPost;
+extern const uint8_t kBintp1MethodPut;
+extern const uint8_t kBintp1MethodDelete;
+extern const uint8_t kBintp1MethodConnect;
+extern const uint8_t kBintp1MethodOptions;
+extern const uint8_t kBintp1MethodTrace;
+
 void Bintp1AppendField(int *tgt_count, struct Bintp1FieldPair *tgt_fields[static * tgt_count],
     struct Bintp1FieldPair new_field_ptr[static 1]);
 

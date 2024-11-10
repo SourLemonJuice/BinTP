@@ -30,7 +30,7 @@ static void DumpBintpField_(struct Bintp1FieldPair *field)
 static void TestRequest_(void)
 {
     struct Bintp1Request request = {
-        .method = 0xee,
+        .method = kBintp1MethodGet,
         .uri = "/",
     };
 
@@ -109,7 +109,7 @@ static void TestRequestPerformance_(int cycle, bool print_toggle, bool pause_tog
 static void TestResponse(void)
 {
     struct Bintp1Response response = {
-        .status = 0xab,
+        .status = 200,
     };
 
     size_t bin_size = Bintp1CalcResponseSize(&response);
@@ -129,7 +129,7 @@ int main(void)
     printf("---- ---- ----\n");
     TestResponse();
 
-    TestRequestPerformance_(1000 * 1000, false, false);
+    // TestRequestPerformance_(1000 * 1000, false, false);
 
     return 0;
 }
