@@ -36,8 +36,12 @@ extern const uint8_t kBintp1MethodConnect;
 extern const uint8_t kBintp1MethodOptions;
 extern const uint8_t kBintp1MethodTrace;
 
-void Bintp1AppendField(int *tgt_count, struct Bintp1FieldPair *tgt_fields[static * tgt_count],
+int Bintp1AppendField(int tgt_count, struct Bintp1FieldPair *tgt_fields[static tgt_count],
     struct Bintp1FieldPair new_field_ptr[static 1]);
+int Bintp1SearchField(
+    int field_count, struct Bintp1FieldPair fields[static field_count], size_t name_size, void *name_ptr);
+int Bintp1SetField(
+    int field_count, struct Bintp1FieldPair fields[static field_count], struct Bintp1FieldPair new[static 1]);
 
 size_t Bintp1CalcRequestSize(struct Bintp1Request prepare_ptr[static 1]);
 size_t Bintp1WriteRequest(void *dest, size_t limit, struct Bintp1Request prepare_ptr[static 1]);

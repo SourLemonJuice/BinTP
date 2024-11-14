@@ -27,19 +27,57 @@ const uint8_t kBintp1MethodConnect = 0x6f;
 const uint8_t kBintp1MethodOptions = 0x83;
 const uint8_t kBintp1MethodTrace = 0x0d;
 
-void Bintp1AppendField(int *tgt_count, struct Bintp1FieldPair *tgt_fields[static * tgt_count],
-    struct Bintp1FieldPair new_field_ptr[static 1])
+/*
+    return new tgt_count
+ */
+int Bintp1AppendField(
+    int tgt_count, struct Bintp1FieldPair *tgt_fields[static tgt_count], struct Bintp1FieldPair new_field_ptr[static 1])
 {
     struct Bintp1FieldPair new_field = *new_field_ptr;
 
-    *tgt_count += 1;
-    int count = *tgt_count;
+    tgt_count += 1;
     struct Bintp1FieldPair *field_list = *tgt_fields;
 
-    field_list = realloc(field_list, sizeof(struct Bintp1FieldPair[count]));
-    field_list[count - 1] = new_field;
+    field_list = realloc(field_list, sizeof(struct Bintp1FieldPair[tgt_count]));
+    field_list[tgt_count - 1] = new_field;
 
     *tgt_fields = field_list;
+    return tgt_count;
+}
+
+/*
+    return the result field index.
+    return negative number is error.
+ */
+int Bintp1SearchField(
+    int field_count, struct Bintp1FieldPair fields[static field_count], size_t name_size, void *name_ptr)
+{
+    for (int i = 0; i < field_count; i++) {
+        struct Bintp1FieldPair now_pair = fields[i];
+        if (now_pair.name_size == name_size and memcmp(now_pair.name, name_ptr, name_size) == 0)
+            return i;
+    }
+
+    return -1;
+}
+
+/*
+    Set a pair in array with a specific name to a new pair.
+    If field pair not exist in the array, append it.
+
+    return the index of the changed field.
+    return negative number is error.
+ */
+int Bintp1SetField(
+    int field_count, struct Bintp1FieldPair fields[static field_count], struct Bintp1FieldPair new[static 1])
+{
+    int idx = Bintp1SearchField(field_count, fields, new->name_size, new->name);
+    if (idx < 0)
+        idx = Bintp1AppendField(field_count, fields, new);
+    else
+        fields[idx] = *new;
+
+    return idx;
 }
 
 /*

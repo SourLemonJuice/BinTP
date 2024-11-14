@@ -34,7 +34,7 @@ static void TestRequest_(void)
         .uri = "/",
     };
 
-    Bintp1AppendField(&request.field_count, &request.fields,
+    Bintp1AppendField(request.field_count, &request.fields,
         &(struct Bintp1FieldPair){
             .name_size = 1,
             .name = &(uint8_t[]){0x31},
@@ -82,8 +82,8 @@ static void TestRequestPerformance_(int cycle, bool print_toggle, bool pause_tog
             .uri = "/",
         };
 
-        Bintp1AppendField(&request.field_count, &request.fields, &field_sample);
-        Bintp1AppendField(&request.field_count, &request.fields, &field_sample);
+        Bintp1AppendField(request.field_count, &request.fields, &field_sample);
+        Bintp1AppendField(request.field_count, &request.fields, &field_sample);
 
         size_t bin_size = Bintp1CalcRequestSize(&request);
         if (bin_size == 0)
