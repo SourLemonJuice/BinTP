@@ -73,7 +73,7 @@ int Bintp1SetField(
 {
     int idx = Bintp1SearchField(field_count, fields, new->name_size, new->name);
     if (idx < 0)
-        idx = Bintp1AppendField(field_count, fields, new);
+        idx = Bintp1AppendField(field_count, &fields, new);
     else
         fields[idx] = *new;
 
