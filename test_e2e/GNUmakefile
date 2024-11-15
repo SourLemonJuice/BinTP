@@ -1,7 +1,7 @@
 lib_src+=../tool/dump.c
 lib_src+=../library/bintp1.c
 
-clang_flag+=-I../library/
+clang_flag+=-I../include/
 clang_flag+=-I../tool/
 clang_flag+=-O0
 clang_flag+=-g

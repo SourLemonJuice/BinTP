@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "bintp1.h"
+#include "bintp/bintp1.h"
 #include "dump.h"
 
 static void TestRequest_(void)

@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <unistd.h> // emm... Never mind, I'm only testing on Linux anyway...
 
-#include "bintp1.h"
+#include "bintp/bintp1.h"
 #include "dump.h"
 
 static void TestRequestPerformance_(int cycle, bool print_toggle, bool pause_toggle)

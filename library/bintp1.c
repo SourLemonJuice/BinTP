@@ -1,6 +1,6 @@
 #define _GNU_SOURCE
 
-#include "bintp1.h"
+#include "bintp/bintp1.h"
 
 #include <iso646.h>
 #include <stdbool.h>

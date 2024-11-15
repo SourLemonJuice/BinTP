@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-#include "bintp1.h"
+#include "bintp/bintp1.h"
 
 void DumpHex_(void *ptr, size_t size);
 void DumpBintpField_(struct Bintp1FieldPair *field);
