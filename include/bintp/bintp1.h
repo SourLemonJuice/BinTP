@@ -14,17 +14,20 @@ struct Bintp1FieldPair {
     void *value;
 };
 
+struct Bintp1Field {
+    int count;
+    struct Bintp1FieldPair *pairs;
+};
+
 struct Bintp1Request {
     uint8_t method;
     char *uri;
-    int field_count;
-    struct Bintp1FieldPair *fields;
+    struct Bintp1Field field;
 };
 
 struct Bintp1Response {
     uint16_t status;
-    int field_count;
-    struct Bintp1FieldPair *fields;
+    struct Bintp1Field field;
 };
 
 extern const uint8_t kBintp1MethodGet;
@@ -36,12 +39,9 @@ extern const uint8_t kBintp1MethodConnect;
 extern const uint8_t kBintp1MethodOptions;
 extern const uint8_t kBintp1MethodTrace;
 
-int Bintp1AppendField(int tgt_count, struct Bintp1FieldPair *tgt_fields[static tgt_count],
-    struct Bintp1FieldPair new_field_ptr[static 1]);
-int Bintp1SearchField(
-    int field_count, struct Bintp1FieldPair fields[static field_count], size_t name_size, void *name_ptr);
-int Bintp1SetField(
-    int field_count, struct Bintp1FieldPair fields[static field_count], struct Bintp1FieldPair new[static 1]);
+int Bintp1AppendField(struct Bintp1Field field[static 1], struct Bintp1FieldPair new_field_ptr[static 1]);
+int Bintp1SearchField(struct Bintp1Field field[static 1], size_t name_size, void *name_ptr);
+int Bintp1SetField(struct Bintp1Field field[static 1], struct Bintp1FieldPair new[static 1]);
 
 size_t Bintp1CalcRequestSize(struct Bintp1Request prepare_ptr[static 1]);
 size_t Bintp1WriteRequest(void *dest, size_t limit, struct Bintp1Request prepare_ptr[static 1]);

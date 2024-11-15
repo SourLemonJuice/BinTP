@@ -20,8 +20,8 @@ static void TestRequestPerformance_(int cycle, bool print_toggle, bool pause_tog
             .uri = "/",
         };
 
-        Bintp1AppendField(request.field_count, &request.fields, &field_sample);
-        Bintp1AppendField(request.field_count, &request.fields, &field_sample);
+        Bintp1AppendField(&request.field, &field_sample);
+        Bintp1AppendField(&request.field, &field_sample);
 
         size_t bin_size = Bintp1CalcRequestSize(&request);
         if (bin_size == 0)

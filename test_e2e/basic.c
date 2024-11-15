@@ -13,13 +13,12 @@ static void TestRequest_(void)
         .uri = "/",
     };
 
-    Bintp1AppendField(request.field_count, &request.fields,
-        &(struct Bintp1FieldPair){
-            .name_size = 1,
-            .name = &(uint8_t[]){0x31},
-            .value_size = 10,
-            .value = &(uint8_t[10]){0x31, 0},
-        });
+    Bintp1AppendField(&request.field, &(struct Bintp1FieldPair){
+                                          .name_size = 1,
+                                          .name = &(uint8_t[]){0x31},
+                                          .value_size = 10,
+                                          .value = &(uint8_t[10]){0x31, 0},
+                                      });
 
     size_t bin_size = Bintp1CalcRequestSize(&request);
     if (bin_size == 0) {
@@ -31,7 +30,7 @@ static void TestRequest_(void)
     void *bin_ptr = malloc(bin_size);
     Bintp1WriteRequest(bin_ptr, bin_size, &request);
     Bintp1FreeUpRequest(&request);
-    DumpHex_(bin_ptr, bin_size);
+    DumpHex(bin_ptr, bin_size);
 
     printf("== == ==\n");
     printf("BintpParseVersion():\t%d\n", BintpParseVersion(bin_ptr, bin_size));
@@ -42,8 +41,8 @@ static void TestRequest_(void)
     printf("URI:\t%s\n", parsed_request.uri);
     printf("Method:\t%u\n", parsed_request.method);
 
-    for (int i = 0; i < parsed_request.field_count; i++)
-        DumpBintpField_(&parsed_request.fields[i]);
+    for (int i = 0; i < parsed_request.field.count; i++)
+        DumpBintpFieldPair(&parsed_request.field.pairs[i]);
 }
 
 static void TestResponse(void)
@@ -60,7 +59,7 @@ static void TestResponse(void)
     Bintp1FreeUpResponse(&response);
 
     printf("response size:\t%zu\n", bin_size);
-    DumpHex_(bin_ptr, bin_size);
+    DumpHex(bin_ptr, bin_size);
 }
 
 int main(void)

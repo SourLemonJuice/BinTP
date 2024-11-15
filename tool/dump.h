@@ -5,7 +5,7 @@
 
 #include "bintp/bintp1.h"
 
-void DumpHex_(void *ptr, size_t size);
-void DumpBintpField_(struct Bintp1FieldPair *field);
+void DumpHex(void *ptr, size_t size);
+void DumpBintpFieldPair(struct Bintp1FieldPair *field);
 
 #endif
