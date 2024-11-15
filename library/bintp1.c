@@ -8,13 +8,6 @@
 
 static const uint8_t kReversion = 0xff;
 
-// TODO separate this function
-#define HEADER_END_FIELD \
-    (struct Bintp1FieldPair) \
-    { \
-        .name_size = 0, .value_size = 0 \
-    }
-
 #define STR_END_MARK_PTR "\0"
 #define STR_END_SIZE 1
 
@@ -171,14 +164,14 @@ static size_t InsertSingleFieldPart_(void *dest, size_t dest_limit, void *src_pt
 }
 
 /*
-    If field.name_size == 0, then just insert one byte with zero.
+    field.name_size == 0 is an error.
 
     return 0: error
  */
 static size_t InsertSingleField_(void *dest, size_t limit, struct Bintp1FieldPair field)
 {
     if (field.name_size == 0)
-        return 1;
+        return 0;
 
     size_t offset = 0;
     int ret;
@@ -208,10 +201,11 @@ static size_t InsertFields_(void *dest, size_t limit, struct Bintp1Field field[s
         ret = InsertSingleField_(dest + offset, limit - offset, field->pairs[i]);
         offset += ret;
     }
-    ret = InsertSingleField_(dest + offset, limit - offset, HEADER_END_FIELD);
-    if (ret == 0)
+
+    if (offset > limit)
         return 0;
-    offset += ret;
+    *(uint8_t *)(dest + offset) = 0x00;
+    offset += 1;
 
     return offset;
 }
